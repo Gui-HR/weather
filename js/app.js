@@ -6,18 +6,11 @@ const cardTemperature = document.querySelector('[data-js="card-temperature"]')
 const timeIcon = document.querySelector('[data-js="time-icon"]')
 const cardWeatherText = document.querySelector('[data-js="weather-text"]')
 
-const getAndInsertCityInfo = async inputcityName => {
-    const cityUrl = getCityUrl(inputcityName)
-    const [ {Key: cityKey, LocalizedName: cityName} ] = await fetchData(cityUrl)
-    const weatherUrl = getWeatherUrl(cityKey)
-    const [ {WeatherText, IsDayTime, Temperature, WeatherIcon} ] = await fetchData(weatherUrl)
-    const cityTemperature = Temperature.Metric.Value
-
-    imgTime.src = IsDayTime ? './src/day.svg' : './src/night.svg'
-    cardCityName.textContent = cityName
-    cardTemperature.textContent = cityTemperature
-    cardWeatherText.textContent = WeatherText
-    timeIcon.innerHTML = `<img src="./src/icons/${WeatherIcon}.svg">`
+const getCityNameToLocationStorage = () => {
+    if(localStorage.getItem('city')) {
+        const cityName = localStorage.getItem('city')
+        getAndInsertCityInfo(cityName)
+    }
 }
 
 const showWeatherCard = () => {
@@ -26,12 +19,31 @@ const showWeatherCard = () => {
     }
 }
 
+const getAndInsertCityInfo = async inputcityName => {
+    const cityUrl = getCityUrl(inputcityName)
+    const [ {Key: cityKey, LocalizedName: cityName} ] = await fetchData(cityUrl)
+    const weatherUrl = getWeatherUrl(cityKey)
+    const [ {WeatherText, IsDayTime, Temperature, WeatherIcon} ] = await fetchData(weatherUrl)
+    const cityTemperature = Temperature.Metric.Value
+
+    localStorage.setItem('city', cityName)
+
+    imgTime.src = IsDayTime ? './src/day.svg' : './src/night.svg'
+    cardCityName.textContent = cityName
+    cardTemperature.textContent = cityTemperature
+    cardWeatherText.textContent = WeatherText
+    timeIcon.innerHTML = `<img src="./src/icons/${WeatherIcon}.svg">`
+
+    showWeatherCard()
+}
+
 form.addEventListener('submit', event => {
     event.preventDefault()
 
     const inputValue = event.target.city.value
 
     getAndInsertCityInfo(inputValue)
-    showWeatherCard()
     event.target.reset()
 })
+
+getCityNameToLocationStorage()
